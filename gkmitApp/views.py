@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login
 from rest_framework.response import Response
 from .models import User, Accounts, Transaction
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework import status, authentication
 from rest_framework.authtoken.models import Token
@@ -101,3 +101,22 @@ class WithdrawAmount(APIView):
             response = {"message":"Please try again after some time", "status":False,
                     "Current Balance": accounts.account_balance}
         return Response(response,status=200) 
+
+class AccountDetail(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        account_id = request.query_params.get("account_id")
+        try:
+            accounts = Accounts.objects.get(account_id=account_id)
+            response = {"Account Balance": accounts.account_balance,
+                        "Account Created":accounts.created_at,
+                        "Username": accounts.user.username,
+                        "email": accounts.user.email,
+                        "mobile number":accounts.user.mobileNumber,
+                        "status":True}
+        except:
+            response = {"message":"Account dose not exists.", "status":False, "data":{}}
+        
+        return Response(response, status=200)
+
+
