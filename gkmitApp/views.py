@@ -5,11 +5,12 @@ from django.http import HttpResponse
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login
 from rest_framework.response import Response
-from .models import User, Accounts
+from .models import User, Accounts, Transaction
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework import status, authentication
 from rest_framework.authtoken.models import Token
+from django.db import IntegrityError, transaction
 
 class UserSignupView(CreateAPIView):
     queryset = User.objects.all()
@@ -50,15 +51,24 @@ class OpenAccount(CreateAPIView):
     permission_classes = (IsAuthenticated, )
 
 class DepositMoney(APIView):
-    serializer_class = OpenAccountSerializer
     permission_classes = (IsAuthenticated, )
 
     def post(self,request):
-        serializer = DepositMoneySerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            data = "hfeubfuefbue"
-        return Response(data)
-
-
+        data = request.data
+        account_id = data['account']
+        transaction_amount = data['transaction_amount']
+        try:
+            with transaction.atomic():
+                accounts = Accounts.objects.get(account_id=account_id)
+                accounts.account_balance = accounts.account_balance + int(transaction_amount)
+                accounts.save()
+                trans_obj = Transaction.objects.create(account =accounts ,transaction_amount=transaction_amount)
+                trans_obj.save()
+                response = {"message":"Money Successfully Deposit", "status":True,
+                    "Current Balance": accounts.account_balance
+                    }
+        except IntegrityError:
+            response = {"message":"Please try after some time", "status":False,
+                    "Current Balance": accounts.account_balance}
+        return Response(response,status=200)        
 
