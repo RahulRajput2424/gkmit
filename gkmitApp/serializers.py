@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from gkmitApp.models import User
+from gkmitApp.models import User, Accounts
 from django.contrib.auth import authenticate, login
 
 class UserSignupSerializer(serializers.ModelSerializer):
@@ -49,3 +49,8 @@ class UserLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Must include "username" and "password".')
         validate_data["user"] = user
         return validate_data
+
+class OpenAccountSerializer(serializers.Serializer):
+    class Meta:
+        model = Accounts
+        fields = '__all__'
