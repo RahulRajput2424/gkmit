@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from gkmitApp.models import User, Accounts
+from gkmitApp.models import User, Accounts, Transaction
 from django.contrib.auth import authenticate, login
 
 class UserSignupSerializer(serializers.ModelSerializer):
@@ -53,4 +53,9 @@ class UserLoginSerializer(serializers.Serializer):
 class OpenAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accounts
+        fields = '__all__'
+
+class DepositMoneySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
         fields = '__all__'
