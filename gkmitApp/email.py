@@ -15,6 +15,4 @@ def send_email(subject,message,amount):
             return HttpResponse('Invalid header found.')
         return HttpResponseRedirect('/contact/thanks/')
     else:
-        # In reality we'd use a form class
-        # to get proper validation errors.
         return HttpResponse('Make sure all fields are entered and valid.')
