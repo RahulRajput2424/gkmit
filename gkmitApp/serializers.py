@@ -50,7 +50,7 @@ class UserLoginSerializer(serializers.Serializer):
         validate_data["user"] = user
         return validate_data
 
-class OpenAccountSerializer(serializers.Serializer):
+class OpenAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accounts
         fields = '__all__'

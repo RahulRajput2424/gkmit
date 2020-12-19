@@ -48,3 +48,11 @@ class OpenAccount(CreateAPIView):
     queryset = Accounts.objects.all()
     serializer_class = OpenAccountSerializer
     permission_classes = (IsAuthenticated, )
+
+    def get_or_create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response({
+            'status': 200,
+            'message': 'Successfully Created, Please Sign-In`',
+            'data': response.data
+        })
