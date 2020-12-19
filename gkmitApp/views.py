@@ -70,7 +70,7 @@ class DepositMoney(APIView):
                     response = {"message":"Money Successfully Deposit", "status":True,
                                 "Current Balance": accounts.account_balance,"data":data}
                     
-                    send_email("Money Deposit",response)
+                    send_email("Money Deposit",response,amount="Credited")
                 else:
                     return Response(serializer.errors)
         except IntegrityError:
@@ -97,6 +97,8 @@ class WithdrawAmount(APIView):
                     data = serializer.data
                     response = {"message":"Money Successfully Debited", "status":True,
                                 "Current Balance": accounts.account_balance,"data":data}
+                
+                    send_email("Money Deposit",response,amount="Debited")
                 else:
                     return Response(serializer.errors)
         except IntegrityError:

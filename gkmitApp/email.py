@@ -3,9 +3,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from email.message import EmailMessage
 import smtplib
 
-def send_email(subject,message): 
+def send_email(subject,message,amount): 
     subject = subject
-    message = "Dear User, your account has been credited with the ammount of {} and you current balance is {}".format(message['data']['transaction_amount'],(message["Current Balance"]))
+    message = "Dear User, your account has been {} with the ammount of {} and you current balance is {}".format(amount,message['data']['transaction_amount'],(message["Current Balance"]))
     from_email = "semwala12@gmail.com"
 
     if subject and message and from_email:
