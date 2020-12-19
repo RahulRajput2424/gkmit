@@ -62,13 +62,42 @@ class DepositMoney(APIView):
                 accounts = Accounts.objects.get(account_id=account_id)
                 accounts.account_balance = accounts.account_balance + int(transaction_amount)
                 accounts.save()
-                trans_obj = Transaction.objects.create(account =accounts ,transaction_amount=transaction_amount)
-                trans_obj.save()
-                response = {"message":"Money Successfully Deposit", "status":True,
-                    "Current Balance": accounts.account_balance
-                    }
+                serializer_data = {"account": accounts.id,"transaction_amount":transaction_amount}
+                serializer = DepositMoneySerializer(data=serializer_data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data
+                    response = {"message":"Money Successfully Deposit", "status":True,
+                                "Current Balance": accounts.account_balance,"data":data}
+                else:
+                    return Response(serializer.errors)
         except IntegrityError:
-            response = {"message":"Please try after some time", "status":False,
+            response = {"message":"Please try again after some time", "status":False,
                     "Current Balance": accounts.account_balance}
         return Response(response,status=200)        
 
+class WithdrawAmount(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self,request):
+        data = request.data
+        account_id = data['account']
+        transaction_amount = data['transaction_amount']
+        try:
+            with transaction.atomic():
+                accounts = Accounts.objects.get(account_id=account_id)
+                accounts.account_balance = accounts.account_balance - int(transaction_amount)
+                accounts.save()
+                serializer_data = {"account": accounts.id,"transaction_amount":transaction_amount}
+                serializer = DepositMoneySerializer(data=serializer_data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data
+                    response = {"message":"Money Successfully Debited", "status":True,
+                                "Current Balance": accounts.account_balance,"data":data}
+                else:
+                    return Response(serializer.errors)
+        except IntegrityError:
+            response = {"message":"Please try again after some time", "status":False,
+                    "Current Balance": accounts.account_balance}
+        return Response(response,status=200) 
