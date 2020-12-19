@@ -1,6 +1,6 @@
   
 import datetime
-from .serializers import UserSignupSerializer
+from .serializers import UserSignupSerializer, UserLoginSerializer
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login
@@ -24,3 +24,22 @@ class UserSignupView(CreateAPIView):
             'message': 'Successfully Created, Please Sign-In`',
             'data': response.data
         })
+
+class UserLoginView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            login(request, user)
+            token= Token.objects.get_or_create(user=user)
+            response = {"data": {"message":"You have logged in successfully.",
+													  "token": str(token), 
+										},
+								"status": 200,}
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            error_data = serializer.errors
+            return Response(data=error_data)
