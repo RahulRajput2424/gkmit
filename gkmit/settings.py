@@ -130,3 +130,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 AUTH_USER_MODEL = 'gkmitApp.User'
+
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'gkmitrahul@gmail.com'
+EMAIL_HOST_PASSWORD = 45678123
+# I have specially created the dummy email for this assignment 

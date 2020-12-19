@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from rest_framework import status, authentication
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError, transaction
-
+from .email  import send_email
 class UserSignupView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSignupSerializer
@@ -69,6 +69,8 @@ class DepositMoney(APIView):
                     data = serializer.data
                     response = {"message":"Money Successfully Deposit", "status":True,
                                 "Current Balance": accounts.account_balance,"data":data}
+                    
+                    send_email("Money Deposit",response)
                 else:
                     return Response(serializer.errors)
         except IntegrityError:
