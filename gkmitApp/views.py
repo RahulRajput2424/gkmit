@@ -1,5 +1,6 @@
   
 import datetime
+from datetime import date
 from .serializers import UserSignupSerializer, UserLoginSerializer, OpenAccountSerializer, DepositMoneySerializer
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -130,16 +131,12 @@ class TransactionHistories(APIView):
     def get(self, request):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
-        datetime_object = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-        print("*****************",datetime_object.year)
+        start_dtime = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        end_dtime  = datetime.datetime.strptime(end_date, '%Y-%m-%d')
         try:
             
-            trans_history = Transaction.objects.filter(transaction_timestamp__year=datetime_object.year,
-                                                        transaction_timestamp__month=datetime_object.month,
-                                                        transaction_timestamp__day=datetime_object.day)
-                                                                                            
-            
-            print("===========",trans_history)
+            trans_history = Transaction.objects.filter(transaction_timestamp__gte=start_dtime,transaction_timestamp__lte=end_dtime)
+
             trans_lst = []
             for t in trans_history:
                 response = {"Transaction Id": t.transaction_id,
@@ -149,6 +146,7 @@ class TransactionHistories(APIView):
                         "Username": t.account.user.username,
                         "email": t.account.user.email,
                         "mobile number":t.account.user.mobileNumber,
+                        "transaction_timestamp": t.transaction_timestamp,
                         "status":True}
                 trans_lst.append(response)
         except Exception as e:
