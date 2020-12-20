@@ -112,7 +112,7 @@ class WithdrawAmount(APIView):
                     response = {"message":"Money Successfully Debited", "status":True,
                                 "Current Balance": accounts.account_balance,"data":data}
                 
-                    send_email("Money Deposit",response,amount="Debited")
+                    send_email("Money Debited",response,amount="Debited")
                 else:
                     return Response(serializer.errors)
         except BalanceInsufficentError:
