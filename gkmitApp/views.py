@@ -11,6 +11,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework import status, authentication
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from .email  import send_email
 from .permission import *
 class UserSignupView(CreateAPIView):
@@ -125,20 +126,35 @@ class AccountDetail(APIView):
         return Response(response, status=200)
 
 class TransactionHistories(APIView):
-    permission_classes = [IsAuthenticated, AdminPermission]
+    permission_classes = [AdminPermission]
     def get(self, request):
-        account_id = request.query_params.get("account_id")
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        datetime_object = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        print("*****************",datetime_object.year)
         try:
-            accounts = Accounts.objects.get(account_id=account_id)
-            response = {"Account Balance": accounts.account_balance,
-                        "Account Created":accounts.created_at,
-                        "Username": accounts.user.username,
-                        "email": accounts.user.email,
-                        "mobile number":accounts.user.mobileNumber,
+            
+            trans_history = Transaction.objects.filter(transaction_timestamp__year=datetime_object.year,
+                                                        transaction_timestamp__month=datetime_object.month,
+                                                        transaction_timestamp__day=datetime_object.day)
+                                                                                            
+            
+            print("===========",trans_history)
+            trans_lst = []
+            for t in trans_history:
+                response = {"Transaction Id": t.transaction_id,
+                        "Transaction Amount":t.transaction_amount,
+                        "Account Id" : t.account.account_id,
+                        "Account Balance" : t.account.account_balance,
+                        "Username": t.account.user.username,
+                        "email": t.account.user.email,
+                        "mobile number":t.account.user.mobileNumber,
                         "status":True}
-        except:
-            response = {"message":"Account dose not exists.", "status":False, "data":{}}
+                trans_lst.append(response)
+        except Exception as e:
+            print(e)
+            trans_lst = {"message":"Data does not exist in the give date time range", "status":False, "data":{}}
         
-        return Response(response, status=200)
+        return Response(trans_lst, status=200)
 
 
