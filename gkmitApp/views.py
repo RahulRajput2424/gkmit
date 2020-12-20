@@ -172,7 +172,7 @@ class TransactionHistories(APIView):
             print(e)
             trans_lst = {"message":"Data does not exist in the give date time range", "status":False, "data":{}}
         print(trans_lst)
-        with open('GFG1', 'w') as f:
+        with open('transaction_history', 'w') as f:
                 write = csv.writer(f)
                 write.writerow(['Transaction Id','Transaction Amount', 'Account Id', 'Account Balance','Username','email','mobile number','transaction_timestamp'])
                 write.writerows(file_lst)
