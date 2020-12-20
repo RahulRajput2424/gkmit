@@ -15,6 +15,8 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from .email  import send_email
 from .permission import *
+from .customException import *
+from .enum import*
 import csv
 class UserSignupView(CreateAPIView):
     queryset = User.objects.all()
@@ -56,6 +58,7 @@ class OpenAccount(CreateAPIView):
 
 class DepositMoney(APIView):
     permission_classes = (IsAuthenticated, )
+    
 
     def post(self,request):
         data = request.data
@@ -64,6 +67,8 @@ class DepositMoney(APIView):
         try:
             with transaction.atomic():
                 accounts = Accounts.objects.get(account_id=account_id)
+                if int(transaction_amount)>int(MaxAmount.AMOUNT):
+                    raise BalaceExceedError("Balance limit is exceeding Max amount can be 100000")
                 accounts.account_balance = accounts.account_balance + int(transaction_amount)
                 accounts.save()
                 serializer_data = {"account": accounts.id,"transaction_amount":transaction_amount}
@@ -77,6 +82,9 @@ class DepositMoney(APIView):
                     send_email("Money Deposit",response,amount="Credited")
                 else:
                     return Response(serializer.errors)
+        except BalaceExceedError:
+            response = {"msg":"Balance Exceed than max limit{}".format(MaxAmount.AMOUNT),"Current Balance": accounts.account_balance}
+
         except IntegrityError:
             response = {"message":"Please try again after some time", "status":False,
                     "Current Balance": accounts.account_balance}
@@ -92,6 +100,8 @@ class WithdrawAmount(APIView):
         try:
             with transaction.atomic():
                 accounts = Accounts.objects.get(account_id=account_id)
+                if int(transaction_amount)>accounts.account_balance:
+                    raise BalanceInsufficentError("You have insuffcent balance in your account")
                 accounts.account_balance = accounts.account_balance - int(transaction_amount)
                 accounts.save()
                 serializer_data = {"account": accounts.id,"transaction_amount":transaction_amount}
@@ -105,9 +115,14 @@ class WithdrawAmount(APIView):
                     send_email("Money Deposit",response,amount="Debited")
                 else:
                     return Response(serializer.errors)
+        except BalanceInsufficentError:
+            response = {"msg":"Insufficent Balance","Current Balance": accounts.account_balance}
+
         except IntegrityError:
             response = {"message":"Please try again after some time", "status":False,
                     "Current Balance": accounts.account_balance}
+     
+
         return Response(response,status=200) 
 
 class AccountDetail(APIView):
