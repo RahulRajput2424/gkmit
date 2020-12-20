@@ -62,7 +62,7 @@ class DepositMoney(APIView):
 
     def post(self,request):
         data = request.data
-        account_id = data['account']
+        account_id = data['account_id']
         transaction_amount = data['transaction_amount']
         try:
             with transaction.atomic():
@@ -95,7 +95,7 @@ class WithdrawAmount(APIView):
 
     def post(self,request):
         data = request.data
-        account_id = data['account']
+        account_id = data['account_id']
         transaction_amount = data['transaction_amount']
         try:
             with transaction.atomic():
