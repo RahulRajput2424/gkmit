@@ -15,6 +15,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from .email  import send_email
 from .permission import *
+import csv
 class UserSignupView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSignupSerializer
@@ -137,7 +138,8 @@ class TransactionHistories(APIView):
             
             trans_history = Transaction.objects.filter(transaction_timestamp__gte=start_dtime,transaction_timestamp__lte=end_dtime)
 
-            trans_lst = []
+            trans_lst = [] 
+            file_lst = []
             for t in trans_history:
                 response = {"Transaction Id": t.transaction_id,
                         "Transaction Amount":t.transaction_amount,
@@ -147,12 +149,18 @@ class TransactionHistories(APIView):
                         "email": t.account.user.email,
                         "mobile number":t.account.user.mobileNumber,
                         "transaction_timestamp": t.transaction_timestamp,
-                        "status":True}
+                        }
                 trans_lst.append(response)
+                flst = [t.transaction_id,t.transaction_amount,t.account.account_id,t.account.account_balance,t.account.user.username,t.account.user.email,t.account.user.mobileNumber, t.transaction_timestamp]
+                file_lst.append(flst)
         except Exception as e:
             print(e)
             trans_lst = {"message":"Data does not exist in the give date time range", "status":False, "data":{}}
-        
+        print(trans_lst)
+        with open('GFG1', 'w') as f:
+                write = csv.writer(f)
+                write.writerow(['Transaction Id','Transaction Amount', 'Account Id', 'Account Balance','Username','email','mobile number','transaction_timestamp'])
+                write.writerows(file_lst)
         return Response(trans_lst, status=200)
 
 
